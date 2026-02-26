@@ -23,5 +23,8 @@ enum WarningBehaviour {
 ## Defines how the whole batched validation process should deal with Warnings.
 @export var warningBehaviour : WarningBehaviour
 
+## The location where the test results should be placed.
+@export_file("*.xml") var report_location : String = "res://test/results/validation_result.xml"
+
 ## List of all Validation Suites that are to be processed in batch.
 @export var suites : Array[ValidationSuite]

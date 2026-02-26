@@ -39,6 +39,9 @@ var _output : ValidatorCLIOutput
 ## The validator object, this the main object, it does all the actual validation logic.
 var _validator : Validator
 
+## JUnit exporter. Saves the validation report to a JUnit compliant XML file.
+var _export : JUnitExport
+
 ## Flag marking if the current iteration is processing a new suite,
 ## one that has not been processed yet.
 var _new_suite : bool = true
@@ -107,6 +110,10 @@ func _ready() -> void :
 	# Initialise the validator with CLI output interface.
 	_output = ValidatorCLIOutput.new(_doctor_settings)
 	_validator = Validator.new(_output)
+	
+	
+	# Initialise the XML exporter.
+	_export = JUnitExport.new()
 	
 	
 	# Load the plugin configuration file to get the current plugin version.
@@ -207,12 +214,15 @@ func _process(delta: float) -> void:
 			# If the scene doesn't have any nodes to validate, process it as and object to ignore.
 			if nodes_to_validate.is_empty() :
 				_process_ignore(node.name, "Scene has nothing to validate.")
+				_export.add_time_to_last_result(Time.get_ticks_usec() - t)
 
 			# If there nodes to validate, process them now.
 			else :
 
 				# Validate each node.
 				for n: Node in nodes_to_validate :
+					
+					var node_t : int = Time.get_ticks_usec()
 					
 					# Grab the path to the node, from the root of the validated scene.
 					var name : String = n.get_path()
@@ -221,8 +231,14 @@ func _process(delta: float) -> void:
 					# Run the node validation.
 					_validator.validate_node(n)
 					
+					# Each node is its own test result, so we need to grab time per node.
+					node_t = Time.get_ticks_usec() - node_t
+					
 					# Process the validation results.
 					_process_results(name)
+					
+					# Add time to the results for this node
+					_export.add_time_to_last_result(node_t)
 			
 				# Clean up the node tree.
 				remove_child(node)
@@ -231,6 +247,9 @@ func _process(delta: float) -> void:
 		# Calulcate the time that it took to run the validation.
 		t = Time.get_ticks_usec() - t
 		_total_time += t
+		
+		# Update the time for the suite, include all time that was required to init the scene.
+		_export.add_suite_time(suite, t)
 			
 	# If we have a loaded Resource, validate it now.
 	elif resource != null :
@@ -265,6 +284,10 @@ func _process(delta: float) -> void:
 		# Calulcate the time that it took to run the validation.
 		t = Time.get_ticks_usec() - t
 		_total_time += t
+		
+		# Add process times to the export.
+		_export.add_time_to_last_result(t)
+		_export.add_suite_time(suite, t)
 			
 			
 	# If there are more scenes in the current suite, go to the next one now.
@@ -289,9 +312,14 @@ func _process(delta: float) -> void:
 	# If all tests have concluded, run the report and exit.
 	else :
 		
+		# Validation finished, process the results.
 		var exit_code : ExitCode = _end()
 		_output.push_debug("Exiting with " + ExitCode.find_key(exit_code) + ".")
 		
+		# Save the report in the set location.
+		_export.save_junit_xml(_batch_settings.report_location)
+		
+		# We're done, return the relevant exit code.
 		get_tree().quit(exit_code)
 		
 		
@@ -384,6 +412,9 @@ func _process_ignore(object_name : String, message : String) -> void :
 		_fail_test_count += 1
 		_error_count += 1
 		
+		# Add the result to the XML export.
+		_export.add_result(suite, object_name, [], message,  JUnitExport.Status.FAIL)
+		
 	# If we don't fail on warnings, process this as a regular warning.
 	else :
 		
@@ -395,6 +426,9 @@ func _process_ignore(object_name : String, message : String) -> void :
 		_test_count += 1
 		_ignore_test_count += 1
 		_warning_count += 1
+		
+		# Add the result to the XML export.
+		_export.add_result(suite, object_name, [], message,  JUnitExport.Status.IGNORE)
 	
 	
 ## Main logic for processing validation results.
@@ -414,9 +448,11 @@ func _process_results(object_name : String) -> void :
 	# Check if we need to treat warnings as errors.
 	var fail_on_warnings : bool = _should_fail_on_warning(suite)
 	
+	var passed : bool = _has_passed(results)
+	
 	# If the validation has passed, print the information appropriately to the console,
 	# and update passed test counter.
-	if _has_passed(results) :
+	if passed :
 		print_rich("\t[color=green][Passed] : [/color]", object_name)
 		_passing_test_count += 1
 	
@@ -435,6 +471,9 @@ func _process_results(object_name : String) -> void :
 			_error_count += 1
 		elif result.severity == ValidationCondition.Severity.WARNING :
 			_warning_count += 1
+	
+	# Add the result to the XML export.
+	_export.add_result(suite, object_name, results, _output._message, JUnitExport.Status.PASS if passed else JUnitExport.Status.FAIL)
 	
 	# The results have been processed, we can clear them now.
 	_output.clear_results()
