@@ -152,4 +152,4 @@ func add_node_warning(origin_node : Node, validation_message : ValidationMessage
 ## Adds warning from the validation of the input [param origin_resource], 
 ## with the input [param validation_message] to the [_results] list.
 func add_resource_warning(origin_resource: Resource, validation_message: ValidationMessage) -> void :
-	_results.append(Result.new(origin_resource.name, validation_message))
+	_results.append(Result.new(origin_resource.resource_name, validation_message))
