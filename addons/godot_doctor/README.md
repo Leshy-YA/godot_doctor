@@ -36,11 +36,13 @@ Or, by manual installation:
   - [🎯 Declarative Syntax](#declarative-syntax)
 - [Syntax](#syntax)
   - [ValidationCondition](#validationcondition)
-  - [Simple Helper Method](#simple-helper-method)
+  - [Simple](#simple-validations)
+  - [Predefined Common Validation Conditions](#predefined-common-validation-conditions)
   - [Reuse validation logic with Callables](#reuse-validation-logic-with-callables)
   - [Abstract Away Complex Logic](#abstract-away-complex-logic)
   - [Nested Validation Conditions](#nested-validation-conditions)
 - [How It Works](#how-it-works)
+- [Command Line Interface](#command-line-interface)
 - [Examples](#examples)
 - [Installation](#installation)
 - [License](#license)
@@ -102,7 +104,8 @@ you are instancing is of the expected type (e.g. has a script attached of that
 type), before you even run the game.
 
 ```gdscript
-## Example: A validation condition that checks whether the `PackedScene` variable `scene_of_foo_type` is of type `Foo`.
+## Example: A validation condition that checks whether the `PackedScene`
+##          variable `scene_of_foo_type` is of type `Foo`.
 ValidationCondition.scene_is_of_type(scene_of_foo_type, Foo)
 ```
 
@@ -155,7 +158,20 @@ var condition = ValidationCondition.new(
 )
 ```
 
-### Simple Helper Method
+Optionally, you can also pass one of three severity levels (`INFO`, `WARNING`,
+`ERROR`) as a third argument, which will adjust at what level of severity the
+error is reported in the Godot Doctor dock:
+
+```gdscript
+# Validation condition with severity level
+var condition = ValidationCondition.new(
+    func(): return health > 0,
+    "Health must be greater than 0",
+    ValidationCondition.Severity.ERROR
+)
+```
+
+### Simple validations
 
 For basic boolean validations, use the convenience `simple()` method, allowing
 you to skip the `func()` wrapper:
@@ -167,6 +183,16 @@ var condition = ValidationCondition.simple(
     "Health must be greater than 0"
 )
 ```
+
+### Predefined Common Validation Conditions
+
+There's also a bunch of often-used validation conditions available as static
+methods on the `ValidationCondition` class, such as `scene_is_of_type`,
+`is_instance_valid`, `string_not_empty`, and more, which saves you time writing
+common validation logic.
+
+You can find them all in
+[the `ValidationCondition` class](./addons/godot_doctor/primitives/validation_condition.gd)
 
 ### Reuse validation logic with Callables
 
@@ -222,6 +248,36 @@ ValidationCondition.new(
    Godot Doctor dock
 5. **Navigation**: Click on errors in the dock to navigate directly to the
    problematic nodes
+
+## Command Line Interface
+
+Also supplied in this repo is the `gd_cmdln.gd` script that can be run from the command line.
+
+The script will run validations of set scenes (`*.tscn/*.scn`files) and resources (`*.tres/*.res` files).
+
+The script will return `0` if all validation succeed and `1` if any validation fail. While providing Error and Warning information to the console. This makes it useful for integration into CI/CD (Continuous Integration / Continuous Delivery) pipelines.
+
+### Usage
+
+From the command line, at the root of your project, use the following command to run the script. 
+```
+[godot] --headless --debug --script addons/godot_doctor/godot_doctor_cmdln.gd
+```
+
+* `[godot]` - the path to the Godot Editor executable.
+* `--headless` - tells Godor to run in headless mode - without the GUI. This is required on platforms that do not have GPU access, such most CI/CD servers.
+* `--debug` - tells Godot to run in debug mode which can by helpful by providing more information to the console.
+* `--script` - tells Godot to run a script, in this case Godot Doctor in CLI mode.
+
+It should be possible to run the script from outside the project root by using the `--path` option.
+
+### Configuration
+
+Behaviour of the Godot Doctor Command Line Interface is managed by a `BatchValidationSettings` resource. It contains lists of Validation Suites, that contain lists of scenes and resources that are to be validated, as well as configuration on how to handle Warnings.
+
+The Godot Doctor settings resource (found at `addons/godot_doctor/settings/godot_doctor_settings.tres`) needs to link to a `BatchValidationSettings` resource. It will be automatically picked by the CLI when run.
+
+**NOTE:** The default locations of the `BatchValidationSettings` resource is 'res://test/batch_validation_settings.tres' and that's the default path used by the Godot Doctor settings. However, that file is not supplies, it needs be create manually.  
 
 ## Examples
 
