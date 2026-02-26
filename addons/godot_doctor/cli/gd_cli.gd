@@ -49,11 +49,10 @@ var _new_suite : bool = true
 ## Stores the index of the Validation Suite that is curentply processed.
 var _current_suite_idx : int = 0
 
-## Stores the index of the Scene in the current Validation Suite that is curentply processed.
-var _current_scene_idx : int = 0 
+## Stores the index of the file in the current Validation Suite that is curently processed.
+var _current_file_idx : int = 0 
 
-## Stores the index of the Resource in the current Validation Suite that is curentply processed.
-var _current_resource_idx : int = 0 
+var _current_file_list : Array[String]
 
 ## The amount of warnings that the validation process has generated.
 var _warning_count : int = 0
@@ -102,6 +101,13 @@ func _ready() -> void :
 		get_tree().quit(ExitCode.EXIT_FAIL)
 		return
 	
+	
+	# If the batch settings couldn't be loaded, the whole process can't run. We need report
+	# a total failure.
+	if _batch_settings.suites.is_empty() :
+		push_error("There are no validation suites set.")
+		get_tree().quit(ExitCode.EXIT_FAIL)
+		return
 	
 	# Store our node path, for parsing during validation.
 	_base_path = get_path()
@@ -152,12 +158,21 @@ func _process(delta: float) -> void:
 	
 	# If we have just switched suites, notify the console and update count.
 	if _new_suite :
+		
+		# Notify the console.
 		print_rich("\n[color=blue]Runing validation suite: [/color]", suite.name)
+		
+		# Increment the counters.
 		_suite_count += 1
+		
+		# Get the files from the new suite.
+		_current_file_list = suite.get_files()
+		
+		# Done processing new suite.
 		_new_suite = false
 	
 	# Validate that the suite contains validations to process.
-	if suite.scenes.is_empty() and suite.resources.is_empty() :
+	if _current_file_list.is_empty() :
 		_output.print_global_message("Suite " + suite.name + "doesn't contain any validations.", ValidationCondition.Severity.WARNING)
 	
 	
@@ -167,12 +182,20 @@ func _process(delta: float) -> void:
 	var resource : Resource
 	
 	# Attempt to load the object that is to be validated.
-	if suite.scenes.size() > _current_scene_idx :
-		scene = _load_resource(suite.scenes[_current_scene_idx])
+	if _current_file_list.size() > _current_file_idx :
 		
-	elif suite.resources.size() > _current_resource_idx :
-		resource = _load_resource(suite.resources[_current_resource_idx])
+		# Grab the file.
+		var file : String = _current_file_list[_current_file_idx]
 		
+		# Make sure we have actual file paths.
+		file = ResourceUID.ensure_path(file)
+		
+		# Load the file either as Packed Scene or as directly as a Resource. PackedScenes are treated 
+		# a bit differently, as we will be instantiating them before validation.		
+		if file.ends_with(".tscn") or file.ends_with(".scn") :
+			scene = _load_resource(file)
+		elif file.ends_with(".tres") or file.ends_with(".res") :
+			resource = _load_resource(file)
 		
 	# If we have a loaded Packed Scene, validate it now.
 	if scene != null :
@@ -290,21 +313,16 @@ func _process(delta: float) -> void:
 		_export.add_suite_time(suite, t)
 			
 			
-	# If there are more scenes in the current suite, go to the next one now.
-	if _current_scene_idx + 1 < suite.scenes.size() :
-		_current_scene_idx += 1
-	
-	# If there are more resources in the current suite, go to the next one now.
-	elif _current_resource_idx + 1 < suite.resources.size() :
-		_current_resource_idx += 1
+	# If there are more files in the current suite, go to the next one now.
+	if _current_file_idx + 1 < _current_file_list.size() :
+		_current_file_idx += 1
 		
 	# If there are more suites to process, go to the next one now.
 	elif _current_suite_idx + 1 < _batch_settings.suites.size() :
 		_current_suite_idx += 1
 		
-		# Rest the scene/resource indices.
-		_current_scene_idx = 0
-		_current_resource_idx = 0
+		# Rest the file index.
+		_current_file_idx = 0
 		
 		# Mark that we are processing a new suite.
 		_new_suite = true
@@ -448,6 +466,7 @@ func _process_results(object_name : String) -> void :
 	# Check if we need to treat warnings as errors.
 	var fail_on_warnings : bool = _should_fail_on_warning(suite)
 	
+	# Check if the validation has passed.
 	var passed : bool = _has_passed(results)
 	
 	# If the validation has passed, print the information appropriately to the console,

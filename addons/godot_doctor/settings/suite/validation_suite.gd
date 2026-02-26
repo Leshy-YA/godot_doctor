@@ -1,6 +1,6 @@
-## Resource used by the CLI interface. It holds lists of Scenes and Resource that are to be 
-## validated in a batched process. Used by [BatchValidationSettings].
-class_name ValidationSuite extends Resource
+## Resource used by the CLI interface, used by [BatchValidationSettings].
+## It mainly returns a list of files that are to go through validation.
+@abstract class_name ValidationSuite extends Resource
 
 
 # ============================================================================
@@ -27,8 +27,10 @@ enum WarningBehaviourOverride {
 ## Defines how validation of this suite should deal with Warnings.
 @export var warningBehaviourOverride : WarningBehaviourOverride
 
-## Paths to scenes that are to be validated.
-@export_file("*.tscn", "*.scn") var scenes : Array[String]
 
-## Paths to resources that are to be validated.
-@export_file("*.tres", "*.res") var resources : Array[String]
+# ============================================================================
+# ABSTRACT INTERFACE
+# ============================================================================
+
+## Returns list of files that contain object that are to be validated - scenes or resources.
+@abstract func get_files() -> Array[String]
