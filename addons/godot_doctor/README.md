@@ -279,6 +279,15 @@ The Godot Doctor settings resource (found at `addons/godot_doctor/settings/godot
 
 **NOTE:** The default location of the `BatchValidationSettings` resource is `res://test/batch_validation_settings.tres` and that's the default path used by the Godot Doctor settings. However, that file is not supplied, it needs be created manually.  
 
+Custom settings file can be provided through the command line as well:
+
+```
+[godot] --headless --debug --script addons/godot_doctor/godot_doctor_cmdln.gd -- [path to settings file]
+```
+
+* The path needs to lead to a `.res` or `.tres` file with a `BatchValidationSettings` resource.
+* The path needs to be put after the double dash "`--`".
+
 ## Examples
 
 For detailed examples and common validation patterns, see
