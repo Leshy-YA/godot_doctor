@@ -52,6 +52,7 @@ var _current_suite_idx : int = 0
 ## Stores the index of the file in the current Validation Suite that is curently processed.
 var _current_file_idx : int = 0 
 
+## The list of files provided by the currently processed Validation Suite.
 var _current_file_list : Array[String]
 
 ## The amount of warnings that the validation process has generated.
