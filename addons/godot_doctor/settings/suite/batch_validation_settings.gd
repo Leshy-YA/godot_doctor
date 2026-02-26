@@ -24,7 +24,7 @@ enum WarningBehaviour {
 @export var warningBehaviour : WarningBehaviour
 
 ## The location where the test results should be placed.
-@export_file("*.xml") var report_location : String = "res://test/results/validation_result.xml"
+@export_file("*.xml") var report_location : String
 
 ## List of all Validation Suites that are to be processed in batch.
 @export var suites : Array[ValidationSuite]

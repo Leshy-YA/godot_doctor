@@ -89,10 +89,10 @@ var _base_path : String
 
 ## Basic initialization of the CLI validation process - mostly loads settings.
 func _ready() -> void :
-		
+	
 	# Initialse the settings.
 	_doctor_settings = load(Validator.VALIDATOR_SETTINGS_PATH)
-	_batch_settings = load(_doctor_settings.batch_validation)
+	_batch_settings = _get_settings()
 	
 	# If the batch settings couldn't be loaded, the whole process can't run. We need report
 	# a total failure.
@@ -118,8 +118,9 @@ func _ready() -> void :
 	_validator = Validator.new(_output)
 	
 	
-	# Initialise the XML exporter.
-	_export = JUnitExport.new()
+	# Initialise the XML exporter, if requested.
+	if not _batch_settings.report_location.is_empty() :
+		_export = JUnitExport.new()
 	
 	
 	# Load the plugin configuration file to get the current plugin version.
@@ -237,7 +238,9 @@ func _process(delta: float) -> void:
 			# If the scene doesn't have any nodes to validate, process it as and object to ignore.
 			if nodes_to_validate.is_empty() :
 				_process_ignore(node.name, "Scene has nothing to validate.")
-				_export.add_time_to_last_result(Time.get_ticks_usec() - t)
+				
+				if _export != null :
+					_export.add_time_to_last_result(Time.get_ticks_usec() - t)
 
 			# If there nodes to validate, process them now.
 			else :
@@ -261,7 +264,8 @@ func _process(delta: float) -> void:
 					_process_results(name)
 					
 					# Add time to the results for this node
-					_export.add_time_to_last_result(node_t)
+					if _export != null :
+						_export.add_time_to_last_result(node_t)
 			
 				# Clean up the node tree.
 				remove_child(node)
@@ -272,7 +276,8 @@ func _process(delta: float) -> void:
 		_total_time += t
 		
 		# Update the time for the suite, include all time that was required to init the scene.
-		_export.add_suite_time(suite, t)
+		if _export != null :
+			_export.add_suite_time(suite, t)
 			
 	# If we have a loaded Resource, validate it now.
 	elif resource != null :
@@ -309,8 +314,9 @@ func _process(delta: float) -> void:
 		_total_time += t
 		
 		# Add process times to the export.
-		_export.add_time_to_last_result(t)
-		_export.add_suite_time(suite, t)
+		if _export != null :
+			_export.add_time_to_last_result(t)
+			_export.add_suite_time(suite, t)
 			
 			
 	# If there are more files in the current suite, go to the next one now.
@@ -335,7 +341,8 @@ func _process(delta: float) -> void:
 		_output.push_debug("Exiting with " + ExitCode.find_key(exit_code) + ".")
 		
 		# Save the report in the set location.
-		_export.save_junit_xml(_batch_settings.report_location)
+		if _export != null :
+			_export.save_junit_xml(_batch_settings.report_location)
 		
 		# We're done, return the relevant exit code.
 		get_tree().quit(exit_code)
@@ -345,6 +352,44 @@ func _process(delta: float) -> void:
 # HELPER METHODS
 # ============================================================================
 
+
+## Returns the [BatchValidationSettings] for this validation run. Will load the file from the
+## commanline user arguments if supplied, and from the default location set in general
+## Godot Doctor settings if not.
+func _get_settings() -> BatchValidationSettings :
+	
+	# Grab the user commandline arguments.
+	var args : PackedStringArray = OS.get_cmdline_user_args()
+	
+	# If the arguments are supplied, try to grab the settings file.
+	if not args.is_empty() :
+		
+		# Grab the first argument.
+		var last_arg : String = args[0]
+		
+		# If the argument is a resource file, try to process it, otherwise just ignore.
+		if last_arg.ends_with(".tres") or last_arg.ends_with(".res") :
+			
+			# Try to load the resource.
+			var resource : Resource = load(last_arg)
+			
+			# If the resource failed to load, fail.
+			if resource == null :
+				push_error("Can't load validation setting resource " + last_arg + ".")
+				return null
+				
+			# If the resource is not of the right type, fail.
+			elif not resource is BatchValidationSettings :
+				push_error("Setting resource " + last_arg + " is not of type BatchValidationSettings, but of type " + resource.get_class() + ".")
+				return null
+				
+			# If the resource is correct, return it.
+			else :
+				return resource as BatchValidationSettings
+		
+	# If no arguments are supplied load the default settings.
+	return load(_doctor_settings.batch_validation)
+	
 
 ## Function that attempts to load a resource from the input path, but does it safely -
 ## checks if the file exits and can be loaded, and if necessary reports found errors.
@@ -431,7 +476,8 @@ func _process_ignore(object_name : String, message : String) -> void :
 		_error_count += 1
 		
 		# Add the result to the XML export.
-		_export.add_result(suite, object_name, [], message,  JUnitExport.Status.FAIL)
+		if _export != null :
+			_export.add_result(suite, object_name, [], message,  JUnitExport.Status.FAIL)
 		
 	# If we don't fail on warnings, process this as a regular warning.
 	else :
@@ -446,7 +492,8 @@ func _process_ignore(object_name : String, message : String) -> void :
 		_warning_count += 1
 		
 		# Add the result to the XML export.
-		_export.add_result(suite, object_name, [], message,  JUnitExport.Status.IGNORE)
+		if _export != null :
+			_export.add_result(suite, object_name, [], message,  JUnitExport.Status.IGNORE)
 	
 	
 ## Main logic for processing validation results.
@@ -492,7 +539,8 @@ func _process_results(object_name : String) -> void :
 			_warning_count += 1
 	
 	# Add the result to the XML export.
-	_export.add_result(suite, object_name, results, _output._message, JUnitExport.Status.PASS if passed else JUnitExport.Status.FAIL)
+	if _export != null :
+		_export.add_result(suite, object_name, results, _output._message, JUnitExport.Status.PASS if passed else JUnitExport.Status.FAIL)
 	
 	# The results have been processed, we can clear them now.
 	_output.clear_results()
