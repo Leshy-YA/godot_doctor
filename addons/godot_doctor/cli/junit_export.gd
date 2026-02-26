@@ -6,6 +6,7 @@ class_name JUnitExport extends RefCounted
 # HELPER TYPES
 # ============================================================================
 
+
 ## Enum defining the status of a test result.
 enum Status { PASS , IGNORE , FAIL }
 
