@@ -10,6 +10,10 @@ class_name Validator extends RefCounted
 ## The method name that nodes and resources should implement to provide validation conditions.
 const VALIDATING_METHOD_NAME: String = "_get_validation_conditions"
 
+## The method name that nodes and resources can implement in order to mark some exported properties
+## as optional - they won't trigger errors when using default validations.
+const OPTIONAL_EXPORT_METHOD_NAME: String = "_optional_exports"
+
 ## The path of the settings resource used to configure the plugin.
 const VALIDATOR_SETTINGS_PATH: String = "res://addons/godot_doctor/settings/godot_doctor_settings.tres"
 
@@ -233,6 +237,11 @@ func _get_export_props(object: Object) -> Array[Dictionary]:
 	var script: Script = object.get_script()
 	if script == null:
 		return []
+		
+	var optional_exports : Array[String] = []
+	
+	if object.has_method(OPTIONAL_EXPORT_METHOD_NAME) :
+		optional_exports = object.call(OPTIONAL_EXPORT_METHOD_NAME)
 
 	var export_props: Array[Dictionary] = []
 
@@ -243,6 +252,9 @@ func _get_export_props(object: Object) -> Array[Dictionary]:
 
 		# Only include exported variables
 		if not (prop.usage & PROPERTY_USAGE_EDITOR):
+			continue
+			
+		if optional_exports.has(prop.name) :
 			continue
 
 		export_props.append(prop)
