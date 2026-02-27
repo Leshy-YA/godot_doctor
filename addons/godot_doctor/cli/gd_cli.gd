@@ -175,7 +175,7 @@ func _process(delta: float) -> void:
 	
 	# Validate that the suite contains validations to process.
 	if _current_file_list.is_empty() :
-		_output.print_global_message("Suite " + suite.name + "doesn't contain any validations.", ValidationCondition.Severity.WARNING)
+		_output.print_global_message("Suite " + suite.name + " doesn't contain any validations.", ValidationCondition.Severity.WARNING)
 	
 	
 	# These will hold the objects we will be validating. Although a PackedScene is also a resource,
