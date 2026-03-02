@@ -36,11 +36,13 @@ func _init(output_interface: ValidatorOutputInterface) -> void:
 ## Processes the validation conditions and reports any errors to the dock.
 func validate_resource(resource: Resource):
 	var validation_conditions: Array[ValidationCondition] = []
-	if GodotDoctorPlugin.settings.use_default_validations:
-		validation_conditions.append_array(_get_default_validation_conditions(resource))
+
+	validation_conditions.append_array(_get_default_validation_conditions(resource))
+
 	if resource.has_method(VALIDATING_METHOD_NAME):
 		var generated_conditions: Array[ValidationCondition] = resource.call(VALIDATING_METHOD_NAME)
 		validation_conditions.append_array(generated_conditions)
+
 	_validate_resource_validation_conditions(resource, validation_conditions)
 
 
@@ -58,8 +60,7 @@ func validate_node(node: Node) -> void:
 
 	var validation_conditions: Array[ValidationCondition] = []
 
-	if GodotDoctorPlugin.settings.use_default_validations:
-		validation_conditions.append_array(_get_default_validation_conditions(validation_target))
+	validation_conditions.append_array(_get_default_validation_conditions(validation_target))
 
 	# Now call the method on the appropriate target (the original node if @tool,
 	# or the new instance if non-@tool).
@@ -196,6 +197,17 @@ func _validate_node_validation_conditions(
 ## - String properties: checks if they are non-empty after stripping whitespace
 ## Returns an array of generated ValidationCondition objects.
 func _get_default_validation_conditions(validation_target: Object) -> Array[ValidationCondition]:
+	# Dont' return any conditions if there are no defaults.
+	if not GodotDoctorPlugin.settings.use_default_validations:
+		return []
+
+	# Grab the object sctipt.
+	var script: Script = validation_target.get_script()
+
+	# Check if the object is in the default to-ignore list.
+	if script == null or script in GodotDoctorPlugin.settings.default_validation_ignore_list:
+		return []
+
 	var export_props: Array[Dictionary] = _get_export_props(validation_target)
 	var validation_conditions: Array[ValidationCondition] = []
 
