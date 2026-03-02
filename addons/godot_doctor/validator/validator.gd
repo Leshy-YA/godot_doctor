@@ -244,10 +244,10 @@ func _get_export_props(object: Object) -> Array[Dictionary]:
 	var script: Script = object.get_script()
 	if script == null:
 		return []
-		
-	var optional_exports : Array[String] = []
-	
-	if object.has_method(OPTIONAL_EXPORT_METHOD_NAME) :
+
+	var optional_exports: Array[String] = []
+
+	if object.has_method(OPTIONAL_EXPORT_METHOD_NAME):
 		optional_exports = object.call(OPTIONAL_EXPORT_METHOD_NAME)
 
 	var export_props: Array[Dictionary] = []
@@ -260,8 +260,8 @@ func _get_export_props(object: Object) -> Array[Dictionary]:
 		# Only include exported variables
 		if not (prop.usage & PROPERTY_USAGE_EDITOR):
 			continue
-			
-		if optional_exports.has(prop.name) :
+
+		if optional_exports.has(prop.name):
 			continue
 
 		export_props.append(prop)
