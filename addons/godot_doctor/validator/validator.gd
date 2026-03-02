@@ -279,10 +279,9 @@ func _get_export_props(object: Object) -> Array[Dictionary]:
 ## For @tool scripts or scripts with no script, returns the original node.
 ## This allows validation of non-@tool scripts without executing gameplay code in the editor.
 func _make_instance_from_placeholder(original_node: Node) -> Object:
-	
-	if not Engine.is_editor_hint() :
-		return  original_node
-	
+	if not Engine.is_editor_hint():
+		return original_node
+
 	var script: Script = original_node.get_script()
 	var is_tool_script: bool = script and script.is_tool()
 

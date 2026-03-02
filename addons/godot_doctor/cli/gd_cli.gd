@@ -19,6 +19,9 @@ enum ExitCode { EXIT_OK, EXIT_FAIL }
 ## in a different than default directory. However, the common process is not to move plugins.
 const PLUGIN_CFG_PATH: String = "res://addons/godot_doctor/plugin.cfg"
 
+## How many secounds should we give the process before each validation  update.
+const RUN_DELAY: float = 0.1
+
 # ============================================================================
 # PRIVATE PROPERTIES
 # ============================================================================
@@ -75,6 +78,9 @@ var _total_time: int
 ## of the validated node.
 var _base_path: String
 
+## Delay timer used to spread out runs, so that deffered cleanup can run.
+var _delay_timer: float = 0.0
+
 # ============================================================================
 # INITIALIZATION
 # ============================================================================
@@ -90,13 +96,13 @@ func _ready() -> void:
 	# a total failure.
 	if _cli_validation_settings == null:
 		push_error("Couldn't find CLI Validation Settings.")
-		get_tree().quit(ExitCode.EXIT_FAIL)
+		_quit(ExitCode.EXIT_FAIL)
 		return
 
 	# If batch don't have any suites, the whole process can't run. We need report a total failure.
 	if _cli_validation_settings.suites.is_empty():
 		push_error("There are no validation suites set.")
-		get_tree().quit(ExitCode.EXIT_FAIL)
+		_quit(ExitCode.EXIT_FAIL)
 		return
 
 	# Store our node path, for parsing during validation.
@@ -123,7 +129,7 @@ func _ready() -> void:
 	# report an error.
 	else:
 		push_error("Couldn't read Godot Doctor plugin configration file: " + PLUGIN_CFG_PATH + ".")
-		get_tree().quit(ExitCode.EXIT_FAIL)
+		_quit(ExitCode.EXIT_FAIL)
 
 
 # ============================================================================
@@ -133,14 +139,23 @@ func _ready() -> void:
 
 ## Main loop running the validation process. Will take one test (scene or resource) per frame,
 ## validate it, untill all tests have been run.
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	# Proces the delay timer.
+	_delay_timer += delta
+
+	if _delay_timer < RUN_DELAY:
+		return
+
+	# Reset the timer for the next run.
+	_delay_timer = 0.0
+
 	# Grab the suite for the current run.
 	var suite: ValidationSuite = _cli_validation_settings.suites[_current_suite_idx]
 
 	# Make sure the suite is valid.
 	if suite == null:
 		push_error("Found null in the Validation Suite list.")
-		get_tree().quit(ExitCode.EXIT_FAIL)
+		_quit(ExitCode.EXIT_FAIL)
 		return
 
 	# If we have just switched suites, notify the console and update count.
@@ -256,9 +271,10 @@ func _process(_delta: float) -> void:
 					if _export != null:
 						_export.add_time_to_last_result(node_t)
 
-				# Clean up the node tree.
-				remove_child(node)
-				node.queue_free()
+			# Clean up the node tree.
+			for n: Node in get_children():
+				remove_child(n)
+				n.queue_free()
 
 		# Calulcate the time that it took to run the validation.
 		t = Time.get_ticks_usec() - t
@@ -324,7 +340,7 @@ func _process(_delta: float) -> void:
 			_export.save_junit_xml(_cli_validation_settings.report_location)
 
 		# We're done, return the relevant exit code.
-		get_tree().quit(exit_code)
+		_quit(exit_code)
 
 
 # ============================================================================
@@ -547,6 +563,15 @@ func _process_results(object_name: String) -> void:
 
 	# The results have been processed, we can clear them now.
 	_output.clear_results()
+
+
+## Quits the application, with relevant additional steps.
+func _quit(code: ExitCode) -> void:
+	## Notify any left objects (like singletons) that the app is quiting.
+	get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+
+	# Quit the app with the input code
+	get_tree().quit(code)
 
 
 ## Function that gathers all the high-level information about the ran validations process,
