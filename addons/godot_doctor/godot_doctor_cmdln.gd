@@ -8,7 +8,7 @@ extends SceneTree
 
 ## An arbitrary amount of iterations we are willing to wait for Engine to start the main loop.
 const MAX_WAIT_ITERATIONS: int = 20
-const GODOT_DOCTOR_CLI_PATH: String = "res://addons/godot_doctor/cli/godot_doctor_cli.gd"
+const GODOT_DOCTOR_CLI_PATH: String = "res://addons/godot_doctor/cli/gd_cli.gd"
 
 # ============================================================================
 # CORE IMPLEMENTATION

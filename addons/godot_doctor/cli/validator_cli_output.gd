@@ -34,6 +34,10 @@ class Result:
 ## Array holding all validation results of the currently validated object.
 var _results: Array[Result]
 
+## Message related to the currently validated object.
+var _message: String
+
+
 # ============================================================================
 # CORE INTERFACE
 # ============================================================================
@@ -92,9 +96,15 @@ func get_results() -> Array[Result]:
 	return _results
 
 
+## Accessor returning [_message] - the message related to the currently validated object.
+func get_message() -> String:
+	return _message
+
+
 ## Clears [_results] and allows for validation of the next object.
 func clear_results() -> void:
 	_results.clear()
+	_message = ""
 
 
 # ============================================================================
@@ -131,10 +141,10 @@ func _print_formated_message(
 # ============================================================================
 
 
-## Normally this pushes a toast notification to the editor toaster. However, this is irrelevant
-## in the CLI as we have all the information already.s
-func push_toast(_message: String, _severity: int = 0) -> void:
-	pass
+## Normally this pushes a toast notification to the editor toaster. However, given that it gives a
+## general summary of the object validation, we can use it as a summary message.
+func push_toast(message: String, _severity: int = 0) -> void:
+	_message = message
 
 
 ## Adds warning from the validation of the input [param origin_node],
@@ -146,4 +156,4 @@ func add_node_warning(origin_node: Node, validation_message: ValidationMessage) 
 ## Adds warning from the validation of the input [param origin_resource],
 ## with the input [param validation_message] to the [_results] list.
 func add_resource_warning(origin_resource: Resource, validation_message: ValidationMessage) -> void:
-	_results.append(Result.new(origin_resource.name, validation_message))
+	_results.append(Result.new(origin_resource.resource_name, validation_message))

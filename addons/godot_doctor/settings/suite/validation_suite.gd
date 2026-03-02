@@ -1,7 +1,7 @@
-## Resource used by the CLI interface, used by [BatchValidationSettings].
+## Resource used by the CLI interface, used by [CLIValidationSettings].
 ## It mainly returns a list of files that are to go through validation.
-@abstract class_name ValidationSuite extends Resource
-
+@abstract
+class_name ValidationSuite extends Resource
 
 # ============================================================================
 # HELPER TYPES
