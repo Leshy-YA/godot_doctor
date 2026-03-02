@@ -37,7 +37,6 @@ var _results: Array[Result]
 ## Message related to the currently validated object.
 var _message: String
 
-
 # ============================================================================
 # CORE INTERFACE
 # ============================================================================

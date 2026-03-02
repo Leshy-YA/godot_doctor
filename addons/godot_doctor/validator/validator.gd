@@ -5,11 +5,15 @@ class_name Validator extends RefCounted
 # PRIVATE PROPERTIES
 # ============================================================================
 
+#gdlint: disable=max-line-length
+
 ## The method name that nodes and resources should implement to provide validation conditions.
 const VALIDATING_METHOD_NAME: String = "_get_validation_conditions"
 
 ## The path of the settings resource used to configure the plugin.
 const GODOT_DOCTOR_SETTINGS_PATH: String = "res://addons/godot_doctor/settings/godot_doctor_settings.tres"
+
+#gdlint: enable=max-line-length
 
 var _output: ValidatorOutputInterface
 
@@ -93,7 +97,10 @@ func find_nodes_to_validate_in_tree(node: Node) -> Array:
 	if script != null and not (script in GodotDoctorPlugin.settings.default_validation_ignore_list):
 		# Add all nodes if use_default_validations is true,
 		# or add only the nodes that have the method if it is false
-		if GodotDoctorPlugin.settings.use_default_validations or node.has_method(VALIDATING_METHOD_NAME):
+		if (
+			GodotDoctorPlugin.settings.use_default_validations
+			or node.has_method(VALIDATING_METHOD_NAME)
+		):
 			nodes_to_validate.append(node)
 
 	# Add their children too, if any

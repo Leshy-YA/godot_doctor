@@ -355,7 +355,7 @@ func _get_settings() -> CLIValidationSettings:
 				return null
 
 			# If the resource is not of the right type, fail.
-			elif not resource is CLIValidationSettings:
+			if not resource is CLIValidationSettings:
 				push_error(
 					(
 						"Setting resource "
@@ -368,8 +368,7 @@ func _get_settings() -> CLIValidationSettings:
 				return null
 
 			# If the resource is correct, return it.
-			else:
-				return resource as CLIValidationSettings
+			return resource as CLIValidationSettings
 
 	# If no arguments are supplied load the default settings.
 	return GodotDoctorPlugin.settings.cli_validation_settings
