@@ -4,7 +4,8 @@ A powerful validation plugin for Godot that catches errors before they reach
 runtime. Validate scenes, nodes, and resources using a declarative, test-driven
 approach. No `@tool` required!
 
-<img src="https://raw.githubusercontent.com/codevogel/godot_doctor/refs/heads/main/github_assets/png/godot_doctor_logo.png" width="256"/>
+<!-- markdownlint-disable-next-line MD033 MD013 -->
+<img src="https://raw.githubusercontent.com/codevogel/godot_doctor/refs/heads/main/github_assets/png/godot_doctor_logo.png" width="256" alt="godot doctor logo"/>
 
 See Godot Doctor in action:
 
@@ -27,13 +28,13 @@ Or, by manual installation:
 
 - [What is Godot Doctor?](#what-is-godot-doctor)
 - [Why Use Godot Doctor?](#why-use-godot-doctor)
-  - [✅ No-code validations](#-no-code-default-validations)
-  - [🏷️ No `@tool` Required](#no-tool-required)
-  - [🎬 Verify type of PackedScene](#verify-type-of-packedscene)
-  - [🔄 Automatic Scene Validation](#automatic-scene-validation)
-  - [⚙️ Validate Nodes AND Resources](#️validate-nodes-and-resources)
-  - [🧪 Test-Driven Validation](#test-driven-validation)
-  - [🎯 Declarative Syntax](#declarative-syntax)
+  - [No-code validations](#no-code-default-validations)
+  - [No `@tool` Required](#no-tool-required)
+  - [Verify type of PackedScene](#verify-type-of-packedscene)
+  - [Automatic Scene Validation](#automatic-scene-validation)
+  - [Validate Nodes AND Resources](#validate-nodes-and-resources)
+  - [Test-Driven Validation](#test-driven-validation)
+  - [Declarative Syntax](#declarative-syntax)
 - [Syntax](#syntax)
   - [ValidationCondition](#validationcondition)
   - [Simple](#simple-validations)
@@ -58,7 +59,7 @@ first, with error messages as metadata.
 
 ## Why Use Godot Doctor?
 
-### ✅ **No-code default validations**
+### No-code default validations
 
 Realistically, when you add any `@export` variables, you don't want them to stay
 unassigned. Nor do you want to `@export` a string only for it to stay empty. But
@@ -74,7 +75,7 @@ line of validation code**!
 > you can add scripts to the ignore list, which will only disable default
 > validations for those specific scripts.
 
-### 🏷️ **No `@tool` Required**
+### No `@tool` Required
 
 Unlike
 [`_get_configuration_warnings()`](https://docs.godotengine.org/en/4.5/classes/class_node.html#class-node-private-method-get-configuration-warnings),
@@ -93,7 +94,7 @@ Or how about this:
 
 Our gameplay code stays much more clean and focused!
 
-### 🎬 Verify type of PackedScene
+### Verify type of PackedScene
 
 Godot has a problem with `PackedScene` type safety.
 [We can not strongly type PackedScenes](https://github.com/godotengine/godot-proposals/issues/782).
@@ -109,7 +110,7 @@ type), before you even run the game.
 ValidationCondition.scene_is_of_type(scene_of_foo_type, Foo)
 ```
 
-### 🔄 Automatic Scene Validation
+### Automatic Scene Validation
 
 Validations run automatically when you save scenes, providing immediate feedback
 during development. Errors are displayed in a dedicated dock, and you can click
@@ -117,7 +118,7 @@ on them to navigate directly to the problematic nodes.
 
 ![Godot Doctor Example Gif](./github_assets/gif/doctor_example.gif)
 
-### ⚙️Validate Nodes AND Resources
+### Validate Nodes AND Resources
 
 Godot Doctor can not only validate nodes in your scene, but `Resource` scripts
 can define their own validation conditions as well. Very useful for validating
@@ -125,7 +126,7 @@ whether your resources have conflicting data (i.e. a value that is higher than
 the maximum value), or missing references (i.e. an empty string, or a missing
 texture).
 
-### 🧪 Test-Driven Validation
+### Test-Driven Validation
 
 Godot Doctor encourages you to write validation logic that resembles unit tests
 rather than write code that returns strings containing warnings. This
@@ -137,7 +138,7 @@ encourages:
 - Human-readable validation conditions
 - Separation of concerns between validation logic and error messages
 
-### 🎯 Declarative Syntax
+### Declarative Syntax
 
 Where `_get_configuration_warnings()` makes you write code that generates
 strings, Godot Doctor lets you design your validation logic separately from the
@@ -251,42 +252,54 @@ ValidationCondition.new(
 
 ## Command Line Interface
 
-Also supplied in this repo is the `gd_cmdln.gd` script that can be run from the command line.
+Also supplied along with the plugin is a `godot_doctor_cmdln.gd` script which
+serves as the entry point for running Godot Doctor in the command line. This
+allows you to run Godot Doctor validations without opening the editor, making it
+ideal for integration into CI/CD pipelines.
 
-The script will run validations of set scenes (`*.tscn/*.scn`files) and resources (`*.tres/*.res` files).
+The script will run validations of set scene (`*.tscn/*.scn`) and resource
+(`*.tres/*.res`) files.
 
-The script will return `0` if all validation succeed and `1` if any validation fail. While providing Error and Warning information to the console. This makes it useful for integration into CI/CD (Continuous Integration / Continuous Delivery) pipelines.
+Running this script will return `0` if all validation succeed and `1` if any
+validation fail, while providing Error and Warning information to the console.
 
 ### Usage
 
-From the command line, at the root of your project, use the following command to run the script. 
-```
-[godot] --headless --debug --script addons/godot_doctor/godot_doctor_cmdln.gd
+From the command line, at the root of your project, use the following command to
+run the script.
+
+```bash
+[godot] --headless --script addons/godot_doctor/godot_doctor_cmdln.gd
 ```
 
-* `[godot]` - the path to the Godot Editor executable.
-* `--headless` - tells Godor to run in headless mode - without the GUI. This is required on platforms that do not have GPU access, such most CI/CD servers.
-* `--debug` - tells Godot to run in debug mode which can by helpful by providing more information to the console.
-* `--script` - tells Godot to run a script, in this case Godot Doctor in CLI mode.
+- `[godot]` - the path to the Godot Editor executable.
+- `--headless` - tells Godor to run in headless mode - without the GUI. This is
+  required on platforms that do not have GPU access, such most CI/CD servers.
+- `--script` - tells Godot to run a script, in this case Godot Doctor in CLI
+  mode.
 
-It should be possible to run the script from outside the project root by using the `--path` option.
+Optionally add the `--debug` flag to run Godot in debug mode, which will halt
+execution on any uncaught errors. This is not recommended for CI/CD pipelines,
+as it can hang your runner, but it can be useful for debugging validation logic
+locally.
+
+If you want to run the CLI from a different directory, you can specify the
+`--path` argument as well, e.g. `--path path/to/the/root/of/your/project`.
 
 ### Configuration
 
-Behaviour of the Godot Doctor Command Line Interface is managed by a `BatchValidationSettings` resource. It contains lists of Validation Suites, that contain lists of scenes and resources that are to be validated, as well as configuration on how to handle Warnings.
+Behaviour of the Godot Doctor Command Line Interface is managed by a
+`CLIValidationSettings` resource. It contains a lists of `ValidationSuite`
+resources. A Validation Suite contain a list of scenes and resources that are to
+be validated, as well as an option that defines how to handle Warnings.
 
-The Godot Doctor settings resource (found at `addons/godot_doctor/settings/godot_doctor_settings.tres`) needs to link to a `BatchValidationSettings` resource. It will be automatically picked by the CLI when run.
+The Godot Doctor settings resource (found at
+`addons/godot_doctor/settings/godot_doctor_settings.tres`) needs to link to a
+`CLIValidationSettings` resource in order for the CLI to work.
 
-**NOTE:** The default location of the `BatchValidationSettings` resource is `res://test/batch_validation_settings.tres` and that's the default path used by the Godot Doctor settings. However, that file is not supplied, it needs be created manually.  
-
-Custom settings file can be provided through the command line as well:
-
-```
-[godot] --headless --debug --script addons/godot_doctor/godot_doctor_cmdln.gd -- [path to settings file]
-```
-
-* The path needs to lead to a `.res` or `.tres` file with a `BatchValidationSettings` resource.
-* The path needs to be put after the double dash "`--`".
+See the example in `addons/godot_doctory/examples/cli_validation_example/` for
+an example `CLIValidationSettings` resource that sets up a validation suite per
+example in `addons/godot_doctory/examples/`.
 
 ## Examples
 
@@ -300,7 +313,7 @@ For detailed examples and common validation patterns, see
 3. The Godot Doctor dock will appear in the editor's left panel
 4. `use_default_validations` is on by default in the settings resource
    (`addons/godot_doctor/settings/godot_doctor_settings.tres`), so it will start
-   reporting any of the [default validations](#-no-code-default-validations) as
+   reporting any of the [default validations](#no-code-default-validations) as
    soon as you save a scene.
 5. Start adding custom validations by adding a `_get_validation_conditions()`
    method to your scripts, then save your scenes to see validation results!

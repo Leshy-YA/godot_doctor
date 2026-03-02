@@ -1,4 +1,5 @@
-# Attributing Godot Doctor
+# Attributing
 
-If you end up using Godot Doctor in your project, a line in your credits would
-be very much appreciated! 🐦
+See [ATTRIBUTING.md](./addons/godot_doctor/ATTRIBUTING.md) in the `godot_doctor`
+addon itself for information on attributing when using Godot Doctor in your
+project.
