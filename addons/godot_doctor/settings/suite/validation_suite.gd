@@ -23,9 +23,6 @@ enum WarningBehaviourOverride { INHERIT, IGNORE_WARNINGS, FAIL_ON_WARNINGS }
 ## Defines how validation of this suite should deal with Warnings.
 @export var warning_behaviour_override: WarningBehaviourOverride
 
-## Paths to scenes that are to be validated.
-@export_file("*.tscn", "*.scn") var scenes: Array[String]
-
 # ============================================================================
 # ABSTRACT INTERFACE
 # ============================================================================
