@@ -4,7 +4,8 @@ A powerful validation plugin for Godot that catches errors before they reach
 runtime. Validate scenes, nodes, and resources using a declarative, test-driven
 approach. No `@tool` required!
 
-<img src="https://raw.githubusercontent.com/codevogel/godot_doctor/refs/heads/main/github_assets/png/godot_doctor_logo.png" width="256"/>
+<!-- markdownlint-disable-next-line MD033 MD013 -->
+<img src="https://raw.githubusercontent.com/codevogel/godot_doctor/refs/heads/main/github_assets/png/godot_doctor_logo.png" width="256" alt="godot doctor logo"/>
 
 See Godot Doctor in action:
 
@@ -27,13 +28,13 @@ Or, by manual installation:
 
 - [What is Godot Doctor?](#what-is-godot-doctor)
 - [Why Use Godot Doctor?](#why-use-godot-doctor)
-  - [✅ No-code validations](#-no-code-default-validations)
-  - [🏷️ No `@tool` Required](#no-tool-required)
-  - [🎬 Verify type of PackedScene](#verify-type-of-packedscene)
-  - [🔄 Automatic Scene Validation](#automatic-scene-validation)
-  - [⚙️ Validate Nodes AND Resources](#️validate-nodes-and-resources)
-  - [🧪 Test-Driven Validation](#test-driven-validation)
-  - [🎯 Declarative Syntax](#declarative-syntax)
+  - [No-code validations](#no-code-default-validations)
+  - [No `@tool` Required](#no-tool-required)
+  - [Verify type of PackedScene](#verify-type-of-packedscene)
+  - [Automatic Scene Validation](#automatic-scene-validation)
+  - [Validate Nodes AND Resources](#validate-nodes-and-resources)
+  - [Test-Driven Validation](#test-driven-validation)
+  - [Declarative Syntax](#declarative-syntax)
 - [Syntax](#syntax)
   - [ValidationCondition](#validationcondition)
   - [Simple](#simple-validations)
@@ -58,7 +59,7 @@ first, with error messages as metadata.
 
 ## Why Use Godot Doctor?
 
-### ✅ **No-code default validations**
+### No-code default validations
 
 Realistically, when you add any `@export` variables, you don't want them to stay
 unassigned. Nor do you want to `@export` a string only for it to stay empty. But
@@ -74,7 +75,7 @@ line of validation code**!
 > you can add scripts to the ignore list, which will only disable default
 > validations for those specific scripts.
 
-### 🏷️ **No `@tool` Required**
+### No `@tool` Required
 
 Unlike
 [`_get_configuration_warnings()`](https://docs.godotengine.org/en/4.5/classes/class_node.html#class-node-private-method-get-configuration-warnings),
@@ -93,7 +94,7 @@ Or how about this:
 
 Our gameplay code stays much more clean and focused!
 
-### 🎬 Verify type of PackedScene
+### Verify type of PackedScene
 
 Godot has a problem with `PackedScene` type safety.
 [We can not strongly type PackedScenes](https://github.com/godotengine/godot-proposals/issues/782).
@@ -109,7 +110,7 @@ type), before you even run the game.
 ValidationCondition.scene_is_of_type(scene_of_foo_type, Foo)
 ```
 
-### 🔄 Automatic Scene Validation
+### Automatic Scene Validation
 
 Validations run automatically when you save scenes, providing immediate feedback
 during development. Errors are displayed in a dedicated dock, and you can click
@@ -117,7 +118,7 @@ on them to navigate directly to the problematic nodes.
 
 ![Godot Doctor Example Gif](./github_assets/gif/doctor_example.gif)
 
-### ⚙️Validate Nodes AND Resources
+### Validate Nodes AND Resources
 
 Godot Doctor can not only validate nodes in your scene, but `Resource` scripts
 can define their own validation conditions as well. Very useful for validating
@@ -125,7 +126,7 @@ whether your resources have conflicting data (i.e. a value that is higher than
 the maximum value), or missing references (i.e. an empty string, or a missing
 texture).
 
-### 🧪 Test-Driven Validation
+### Test-Driven Validation
 
 Godot Doctor encourages you to write validation logic that resembles unit tests
 rather than write code that returns strings containing warnings. This
@@ -137,7 +138,7 @@ encourages:
 - Human-readable validation conditions
 - Separation of concerns between validation logic and error messages
 
-### 🎯 Declarative Syntax
+### Declarative Syntax
 
 Where `_get_configuration_warnings()` makes you write code that generates
 strings, Godot Doctor lets you design your validation logic separately from the
@@ -300,7 +301,7 @@ For detailed examples and common validation patterns, see
 3. The Godot Doctor dock will appear in the editor's left panel
 4. `use_default_validations` is on by default in the settings resource
    (`addons/godot_doctor/settings/godot_doctor_settings.tres`), so it will start
-   reporting any of the [default validations](#-no-code-default-validations) as
+   reporting any of the [default validations](#no-code-default-validations) as
    soon as you save a scene.
 5. Start adding custom validations by adding a `_get_validation_conditions()`
    method to your scripts, then save your scenes to see validation results!

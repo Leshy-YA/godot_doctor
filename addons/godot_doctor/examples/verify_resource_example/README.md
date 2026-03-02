@@ -10,15 +10,15 @@ of that Resource itself.
 configuration requirements that are difficult to enforce:
 
 1. **Dynamic Property Constraints:** You might have a `Resource` representing a
-    character's stats where the `current_health` must always be between `0` and
-    `max_health`. While Godot's `@export_range` is useful, it only accepts
-    constant limits. It cannot enforce dynamic constraints where one property's
-    valid range depends on the value of another property within the same
-    Resource.
+   character's stats where the `current_health` must always be between `0` and
+   `max_health`. While Godot's `@export_range` is useful, it only accepts
+   constant limits. It cannot enforce dynamic constraints where one property's
+   valid range depends on the value of another property within the same
+   Resource.
 2. **Broken References:** A Resource often links to other data like Textures,
-    Scenes, or other Resources. If these links are forgotten (null) or the
-    linked file is deleted, you get a **broken reference** that leads to
-    frustrating runtime errors, as Godot offers no editor-time warning for this.
+   Scenes, or other Resources. If these links are forgotten (null) or the linked
+   file is deleted, you get a **broken reference** that leads to frustrating
+   runtime errors, as Godot offers no editor-time warning for this.
 
 ## The Solution
 
@@ -27,12 +27,12 @@ script, using the same **`_get_validation_conditions()`** mechanism used for
 Nodes.
 
 1. We can create a custom check to ensure that the `health` property is always
-    greater than zero, and we can even make this check dynamic by referencing
-    other properties of the `Resource`.
+   greater than zero, and we can even make this check dynamic by referencing
+   other properties of the `Resource`.
 
 2. We can also create checks to ensure that all linked resources are valid and
-    not null, helping us catch broken references at design time rather than at
-    runtime.
+   not null, helping us catch broken references at design time rather than at
+   runtime.
 
 We can report these errors directly from the `Resource` itself, or from any
 `Node` that uses this `Resource`. (e.g. when inspecting a `Resource` instance in

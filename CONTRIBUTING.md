@@ -40,11 +40,18 @@ If you would like to contribute code, please follow these guidelines:
 0. First, open an issue related to the feature or bug fix you are working on.
 1. Fork the repository and create a new branch for your feature or bug fix.
 2. Write clear, concise commit messages.
-3. Ensure your code follows `gdscript` style guidelines.
-4. Ensure your code is documented and includes comments where necessary.
+3. Ensure your code is documented and includes comments where necessary.
+4. **BEFORE PUSHING:** Run `./format.sh` to format your code according to the
+   project's style guidelines.
+   - You will need to have installed
+     - `gdtoolkit` for `gdformat` and `gdlint` (See:
+       [gdtoolkit](https://github.com/Scony/godot-gdscript-toolkit?tab=readme-ov-file#installation))
+     - `prettier` (See: [prettier](https://prettier.io/docs/install))
+     - `markdown-cli2` (See:
+       [markdown-cli2](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#install))
+       > You can also run `gdformat .`, `gdlint .`, `prettier --write .`, or
+       > `markdownlint ./**/*.md` if you are encountering issue with just one of
+       > the formatters/linters.
 5. Mention the issue number in your pull request description.
-
-> When changing documentation, please be aware that the README file has to be
-> duplicated both in the root folder and in the `addons/godot-doctor` folder.
 
 Thanks for contributing! 🐦

@@ -39,7 +39,7 @@ This function checks:
 1. Is the `PackedScene` valid and assigned?
 2. Does the root node of the scene have a script attached?
 3. If a script exists, does it define a `class_name` that matches the
-    `expected_type`?
+   `expected_type`?
 
 It returns a `ValidationCondition` that fails if any of these checks do not
 pass, allowing you to catch the error at design time. We use it in our
