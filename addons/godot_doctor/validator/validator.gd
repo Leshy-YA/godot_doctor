@@ -1,11 +1,11 @@
 ## Class that handles validation of Scenes and Resources.
 class_name Validator extends RefCounted
 
-
 # ============================================================================
 # PRIVATE PROPERTIES
 # ============================================================================
 
+#gdlint: disable=max-line-length
 
 ## The method name that nodes and resources should implement to provide validation conditions.
 const VALIDATING_METHOD_NAME: String = "_get_validation_conditions"
@@ -15,26 +15,18 @@ const VALIDATING_METHOD_NAME: String = "_get_validation_conditions"
 const OPTIONAL_EXPORT_METHOD_NAME: String = "_optional_exports"
 
 ## The path of the settings resource used to configure the plugin.
-const VALIDATOR_SETTINGS_PATH: String = "res://addons/godot_doctor/settings/godot_doctor_settings.tres"
+const GODOT_DOCTOR_SETTINGS_PATH: String = "res://addons/godot_doctor/settings/godot_doctor_settings.tres"
 
-## A Resource that holds the settings for the Godot Doctor plugin.
-var settings: GodotDoctorSettings:
-	get:
-		# This may be used before @onready
-		# so we lazy load it here if needed.
-		if not settings:
-			settings = load(VALIDATOR_SETTINGS_PATH) as GodotDoctorSettings
-		return settings
+#gdlint: enable=max-line-length
 
-var _output : ValidatorOutputInterface
-
+var _output: ValidatorOutputInterface
 
 # ============================================================================
 # INITIALIZATION - Constructor
 # ============================================================================
 
 
-func _init(output_interface : ValidatorOutputInterface) -> void : 
+func _init(output_interface: ValidatorOutputInterface) -> void:
 	_output = output_interface
 
 
@@ -48,11 +40,13 @@ func _init(output_interface : ValidatorOutputInterface) -> void :
 ## Processes the validation conditions and reports any errors to the dock.
 func validate_resource(resource: Resource):
 	var validation_conditions: Array[ValidationCondition] = []
-	if settings.use_default_validations:
-		validation_conditions.append_array(_get_default_validation_conditions(resource))
+
+	validation_conditions.append_array(_get_default_validation_conditions(resource))
+
 	if resource.has_method(VALIDATING_METHOD_NAME):
 		var generated_conditions: Array[ValidationCondition] = resource.call(VALIDATING_METHOD_NAME)
 		validation_conditions.append_array(generated_conditions)
+
 	_validate_resource_validation_conditions(resource, validation_conditions)
 
 
@@ -70,8 +64,7 @@ func validate_node(node: Node) -> void:
 
 	var validation_conditions: Array[ValidationCondition] = []
 
-	if settings.use_default_validations:
-		validation_conditions.append_array(_get_default_validation_conditions(validation_target))
+	validation_conditions.append_array(_get_default_validation_conditions(validation_target))
 
 	# Now call the method on the appropriate target (the original node if @tool,
 	# or the new instance if non-@tool).
@@ -80,7 +73,7 @@ func validate_node(node: Node) -> void:
 		var generated_conditions = validation_target.call(VALIDATING_METHOD_NAME)
 		_output.push_debug("Generated validation conditions: %s" % [generated_conditions])
 		validation_conditions.append_array(generated_conditions)
-	elif not settings.use_default_validations:
+	elif not GodotDoctorPlugin.settings.use_default_validations:
 		# This should never happen, since we filtered for nodes that have no validation method
 		# when use_default_validations is false, but do this just in case
 		push_error(
@@ -106,10 +99,13 @@ func find_nodes_to_validate_in_tree(node: Node) -> Array:
 
 	# Only add nodes that have a script attached
 	var script: Script = node.get_script()
-	if script != null and not (script in settings.default_validation_ignore_list):
+	if script != null and not (script in GodotDoctorPlugin.settings.default_validation_ignore_list):
 		# Add all nodes if use_default_validations is true,
 		# or add only the nodes that have the method if it is false
-		if settings.use_default_validations or node.has_method(VALIDATING_METHOD_NAME):
+		if (
+			GodotDoctorPlugin.settings.use_default_validations
+			or node.has_method(VALIDATING_METHOD_NAME)
+		):
 			nodes_to_validate.append(node)
 
 	# Add their children too, if any
@@ -117,7 +113,7 @@ func find_nodes_to_validate_in_tree(node: Node) -> Array:
 	for child in children:
 		nodes_to_validate.append_array(find_nodes_to_validate_in_tree(child))
 	return nodes_to_validate
-	
+
 
 # ============================================================================
 # VALIDATION CONDITION PROCESSING - Processing and reporting validation results
@@ -205,6 +201,17 @@ func _validate_node_validation_conditions(
 ## - String properties: checks if they are non-empty after stripping whitespace
 ## Returns an array of generated ValidationCondition objects.
 func _get_default_validation_conditions(validation_target: Object) -> Array[ValidationCondition]:
+	# Dont' return any conditions if there are no defaults.
+	if not GodotDoctorPlugin.settings.use_default_validations:
+		return []
+
+	# Grab the object sctipt.
+	var script: Script = validation_target.get_script()
+
+	# Check if the object is in the default to-ignore list.
+	if script == null or script in GodotDoctorPlugin.settings.default_validation_ignore_list:
+		return []
+
 	var export_props: Array[Dictionary] = _get_export_props(validation_target)
 	var validation_conditions: Array[ValidationCondition] = []
 
